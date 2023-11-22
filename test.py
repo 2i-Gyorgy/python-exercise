@@ -1,12 +1,13 @@
 
+import ijson
 import json
 import requests
 import time
 
-JsonFileTaksOne = open("test_data_one.json")
-jsonFileTaskFive = open("test_data_five.json")
-dataTaksOnePythonList = json.load(JsonFileTaksOne)                              # Load the JSON data into a Python dictionary
-dataTaksFivePythonList = json.load(jsonFileTaskFive)                            # Load the JSON data into a Python dictionary
+# JsonFileTaksOne = open("test_data_one.json")
+# jsonFileTaskFive = open("test_data_five.json")
+# dataTaksOnePythonList = json.load(JsonFileTaksOne)                              # Load the JSON data into a Python dictionary
+# dataTaksFivePythonList = json.load(jsonFileTaskFive)                            # Load the JSON data into a Python dictionary
 
 url = "http://localhost:3002/people"
 
@@ -16,27 +17,29 @@ headers = {"Content-Type": "application/json"}
 
 # !!!!!create an error list, that would hold all errors to list at the end, or to say finished wit no erros
 
+# https://pythonspeed.com/articles/json-memory-streaming/
+
 def validate_data_function(jsonFile):
-    dataToValidatePythonList = json.load(open(jsonFile))                              # Load the JSON data into a Python dictionary
-    validateKeysList = ["fullName", "email", "job", "dob"]
-    if type(dataToValidatePythonList) is dict:                                        # check if file contains a single entrie or a list of entries
-        for i in range (len(validateKeysList)):
-            if validateKeysList[i] in dataToValidatePythonList:
-                if not isinstance(dataToValidatePythonList[validateKeysList[i]], str):
-                    print(validateKeysList[i], " is a key, but the value is not a string.")
-            else: print(validateKeysList[i], "is not a key in the dictionary.")
-    elif type(dataToValidatePythonList) is list:
-        for i in range(len(dataToValidatePythonList)):
-                if type(dataToValidatePythonList[i]) is dict:                         # check if file contains a single entrie or a list of entries
-                    for j in range (len(validateKeysList)):
-                        if validateKeysList[j] in dataTaksFivePythonList[i]:
-                            if not isinstance(dataToValidatePythonList[i][validateKeysList[j]], str):
-                                print(validateKeysList[j], "is a key, but the value is not a string.")
-                        else: print(validateKeysList[j], "is not a key in dictionary:", dataToValidatePythonList[i])
-                else:
-                    print("entrie is not a 'dict' - formating error")
-    else:
-        print("entrie is not a 'dict' or a 'list' - formating error")
+    with open(jsonFile, "rb") as dataToValidateJsonFile:
+        validateKeysList = ["fullName", "email", "job", "dob"]
+        for record in ijson.items(dataToValidateJsonFile, "item"):
+            for i in range (len(validateKeysList)):
+                if validateKeysList[i] in dataToValidatePythonList:
+                    if not isinstance(dataToValidatePythonList[validateKeysList[i]], str):
+                        print(validateKeysList[i], " is a key, but the value is not a string.")
+                else: print(validateKeysList[i], "is not a key in the dictionary.")
+            elif type(dataToValidatePythonList) is list:
+                for i in range(len(dataToValidatePythonList)):
+                        if type(dataToValidatePythonList[i]) is dict:                         # check if file contains a single entrie or a list of entries
+                            for j in range (len(validateKeysList)):
+                                if validateKeysList[j] in dataTaksFivePythonList[i]:
+                                    if not isinstance(dataToValidatePythonList[i][validateKeysList[j]], str):
+                                        print(validateKeysList[j], "is a key, but the value is not a string.")
+                                else: print(validateKeysList[j], "is not a key in dictionary:", dataToValidatePythonList[i])
+                        else:
+                            print("entrie is not a 'dict' - formating error")
+            else:
+                print("entrie is not a 'dict' or a 'list' - formating error")
 
 validate_data_function("test_data_one.json")
 validate_data_function("test_data_five.json")
